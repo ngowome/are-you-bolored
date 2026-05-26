@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Are you Bolloré'd ?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center py-16 px-4">
+
+    <div class="max-w-2xl w-full text-center space-y-6">
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">
+            Are you <span class="text-red-600">Bolloré'd ?</span>
+        </h1>
+        <p class="text-lg text-slate-600">
+            Vérifiez instantanément si un média, une marque ou une entreprise appartient à la galaxie de la famille Bolloré.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+            <input 
+                type="text" 
+                id="barreRecherche" 
+                placeholder="Ex: CNews, Havas, Gameloft..." 
+                class="w-full sm:w-96 px-5 py-4 text-lg border-2 border-slate-200 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-sm transition-all"
+                onkeypress="gererToucheEntree(event)"
+            >
+            <button 
+                onclick="lancerRecherche()" 
+                class="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-lg shadow-md transition-colors"
+            >
+                Vérifier
+            </button>
+        </div>
+
+        <div id="zoneResultat" class="mt-10 hidden text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8">
+            </div>
+    </div>
+
+    <script>
+        [
+  {"n":"Bolloré SE","aliases":["bollore","bollore se","bolloré se","bolloré"],"type":"holding","description":"La holding principale, point de convergence de l'empire.","chain":["Bolloré SE"]},
+  {"n":"Compagnie de l'Odet","aliases":["odet","compagnie de l odet","compagnie odet"],"type":"holding","description":"Société holding de tête qui contrôle Bolloré SE.","chain":["Compagnie de l'Odet","Bolloré SE"]},
+  {"n":"Financière de l'Odet","aliases":["financiere de l odet","financière de l odet"],"type":"holding","description":"Holding intermédiaire dans la pyramide de contrôle.","chain":["Financière de l'Odet","Compagnie de l'Odet","Bolloré SE"]},
+  {"n":"Compagnie du Cambodge","aliases":["compagnie du cambodge","cambodge"],"type":"holding","description":"Holding financière historique du groupe.","chain":["Compagnie du Cambodge","Bolloré SE"]},
+  {"n":"Financière Moncey","aliases":["financiere moncey","moncey"],"type":"holding","description":"Holding de participations du groupe Bolloré.","chain":["Financière Moncey","Bolloré SE"]},
+  {"n":"Société Industrielle et Financière de l'Artois","aliases":["sifa","artois","financiere de l artois"],"type":"holding","description":"Holding financière gérant diverses participations.","chain":["SIFA","Bolloré SE"]},
+  {"n":"Vivendi","aliases":["vivendi","groupe vivendi"],"type":"media","description":"Ex-géant des médias scindé en 2024. La famille Bolloré reste le chef d'orchestre des entités séparées.","chain":["Vivendi","Bolloré SE"]},
+  {"n":"Canal+","aliases":["canal plus","canal+","mycanal","my canal"],"type":"media","description":"Groupe audiovisuel de dimension mondiale.","chain":["Canal+","Vivendi","Bolloré SE"]},
+  {"n":"CNews","aliases":["cnews","c news","itele","i-tele"],"type":"media","description":"Chaîne d'information en continu.","chain":["CNews","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"C8","aliases":["c8","c 8","direct 8"],"type":"media","description":"Chaîne de divertissement.","chain":["C8","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"CStar","aliases":["cstar","c star","direct star"],"type":"media","description":"Chaîne musicale et de divertissement.","chain":["CStar","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Polar+","aliases":["polar+","polar plus"],"type":"media","description":"Chaîne thématique dédiée au genre policier.","chain":["Polar+","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Planète+","aliases":["planete+","planete plus","planète+"],"type":"media","description":"Chaîne thématique documentaire.","chain":["Planète+","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Piwi+","aliases":["piwi+","piwi plus","piwi"],"type":"media","description":"Chaîne de télévision pour enfants.","chain":["Piwi+","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Télétoon+","aliases":["teletoon+","teletoon plus","télétoon+"],"type":"media","description":"Chaîne d'animation pour la jeunesse.","chain":["Télétoon+","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"StudioCanal","aliases":["studio canal","studiocanal"],"type":"production","description":"Studio de production et de distribution de films et séries à l'échelle européenne.","chain":["StudioCanal","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"M7 Group","aliases":["m7","m7 group"],"type":"media","description":"Opérateur de télévision payante en Europe centrale et de l'Est.","chain":["M7 Group","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"MultiChoice","aliases":["multichoice","dstv"],"type":"media","description":"Géant de la télévision payante en Afrique.","chain":["MultiChoice","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Viaplay","aliases":["viaplay", "viaplay group"],"type":"media","description":"Plateforme de streaming nordique dans laquelle Canal+ détient une participation majeure.","chain":["Viaplay","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Viu","aliases":["viu"],"type":"media","description":"Plateforme de streaming asiatique avec un partenariat stratégique de Canal+.","chain":["Viu","Canal+","Vivendi","Bolloré SE"]},
+  {"n":"Prisma Media","aliases":["prisma media","prisma"],"type":"presse","description":"Premier groupe de presse magazine en France.","chain":["Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Simone","aliases":["simone","simone media","simonde media"],"type":"digital","description":"Média social d'information féministe, souvent perçu comme indépendant.","chain":["Simone","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Neon","aliases":["neon","néon","neon magazine"],"type":"presse","description":"Magazine et média numérique destiné aux jeunes adultes.","chain":["Neon","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Femme Actuelle","aliases":["femme actuelle"],"type":"presse","description":"Magazine féminin.","chain":["Femme Actuelle","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Gala","aliases":["gala"],"type":"presse","description":"Magazine people.","chain":["Gala","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Capital","aliases":["capital magazine","capital"],"type":"presse","description":"Magazine économique.","chain":["Capital","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Voici","aliases":["voici"],"type":"presse","description":"Magazine people.","chain":["Voici","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Télé Loisirs","aliases":["tele loisirs","tele-loisirs"],"type":"presse","description":"Magazine de programmes TV.","chain":["Télé Loisirs","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Géo","aliases":["geo","géo"],"type":"presse","description":"Magazine de découverte et voyage.","chain":["Géo","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"National Geographic France","aliases":["national geographic france","natgeo"],"type":"presse","description":"Édition française gérée sous licence par Prisma.","chain":["National Geographic France","Prisma Media","Vivendi","Bolloré SE"]},
+  {"n":"Louis Hachette Group","aliases":["louis hachette","lhg","lagardere","lagardère"],"type":"presse_edition","description":"Entité issue de la scission de Vivendi, englobant l'empire Lagardère.","chain":["Louis Hachette Group","Vivendi","Bolloré SE"]},
+  {"n":"Hachette Livre","aliases":["hachette","hachette livre"],"type":"edition","description":"Premier éditeur français.","chain":["Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Grasset","aliases":["grasset","editions grasset"],"type":"edition","description":"Maison d'édition littéraire prestigieuse.","chain":["Grasset","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Fayard","aliases":["fayard","editions fayard"],"type":"edition","description":"Grande maison d'édition française.","chain":["Fayard","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Stock","aliases":["stock","editions stock"],"type":"edition","description":"L'une des plus anciennes maisons d'édition françaises.","chain":["Stock","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Calmann-Lévy","aliases":["calmann-levy","calmann levy"],"type":"edition","description":"Maison d'édition généraliste historique.","chain":["Calmann-Lévy","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Europe 1","aliases":["europe 1","europe1"],"type":"radio","description":"Station de radio généraliste.","chain":["Europe 1","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Europe 2","aliases":["europe 2","europe2","virgin radio"],"type":"radio","description":"Station de radio musicale.","chain":["Europe 2","Louis Hachette Group","Bolloré SE"]},
+  {"n":"RFM","aliases":["rfm"],"type":"radio","description":"Station de radio musicale.","chain":["RFM","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Le Journal du Dimanche","aliases":["le jdd","jdd","journal du dimanche"],"type":"presse","description":"Hebdomadaire d'actualité dominical.","chain":["Le JDD","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Relay","aliases":["relay","lagardere travel retail"],"type":"distribution","description":"Réseau de boutiques en gares et aéroports.","chain":["Relay","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Havas","aliases":["havas","havas group"],"type":"publicite","description":"Géant mondial de la communication et de la publicité.","chain":["Havas","Vivendi","Bolloré SE"]},
+  {"n":"BETC","aliases":["betc","betc paris"],"type":"publicite","description":"Agence de publicité française de renommée mondiale.","chain":["BETC","Havas","Vivendi","Bolloré SE"]},
+  {"n":"Havas Media","aliases":["havas media"],"type":"publicite","description":"Pôle achat d'espace de Havas.","chain":["Havas Media","Havas","Vivendi","Bolloré SE"]},
+  {"n":"Universal Music Group","aliases":["umg","universal music"],"type":"musique","description":"Leader mondial de l'industrie musicale, dont le groupe détient d'importantes parts.","chain":["UMG","Vivendi / Bolloré SE"]},
+  {"n":"Dailymotion","aliases":["dailymotion","daily motion"],"type":"digital","description":"Plateforme de partage de vidéos.","chain":["Dailymotion","Vivendi","Bolloré SE"]},
+  {"n":"Gameloft","aliases":["gameloft"],"type":"digital","description":"Éditeur de jeux vidéo pour mobiles.","chain":["Gameloft","Vivendi","Bolloré SE"]},
+  {"n":"Banijay","aliases":["banijay","fl entertainment", "banijay group"],"type":"production","description":"Géant de la production télévisuelle mondiale (Koh-Lanta, MasterChef). Participation minoritaire mais stratégique.","chain":["Banijay","Vivendi","Bolloré SE"]},
+  {"n":"Telecom Italia","aliases":["telecom italia","tim italia","tim"],"type":"telecom","description":"Opérateur télécoms italien dont Vivendi est le premier actionnaire.","chain":["Telecom Italia","Vivendi","Bolloré SE"]},
+  {"n":"Bolloré Énergie","aliases":["bollore energie","bolloré énergie"],"type":"energie","description":"Distribution de produits pétroliers en France et en Europe.","chain":["Bolloré Énergie","Bolloré SE"]},
+  {"n":"Blue Solutions","aliases":["blue solutions","blue sol"],"type":"energie","description":"Conception de batteries solides LMP.","chain":["Blue Solutions","Bolloré SE"]},
+  {"n":"Bluebus","aliases":["bluebus","blue bus"],"type":"energie","description":"Fabricant de bus urbains électriques.","chain":["Bluebus","Blue Solutions","Bolloré SE"]},
+  {"n":"IER","aliases":["ier"],"type":"technologie","description":"Conception de terminaux de billetterie et bornes libre-service (présents dans la plupart des aéroports).","chain":["IER","Bolloré SE"]},
+  {"n":"Automatic Systems","aliases":["automatic systems"],"type":"technologie","description":"Fabricant d'équipements de contrôle d'accès sécurisé (portiques de métro, barrières de péage).","chain":["Automatic Systems","IER","Bolloré SE"]},
+  {"n":"Polyconseil","aliases":["polyconseil"],"type":"technologie","description":"Cabinet de conseil en innovation et transformation numérique.","chain":["Polyconseil","Bolloré SE"]},
+  {"n":"Socfin","aliases":["socfin","soc fin"],"type":"agriculture","description":"Groupe agro-industriel gérant des plantations de palmiers à huile et d'hévéas.","chain":["Socfin","Bolloré SE"]},
+  {"n":"Socfinaf","aliases":["socfinaf"],"type":"agriculture","description":"Branche africaine de Socfin.","chain":["Socfinaf","Socfin","Bolloré SE"]},
+  {"n":"Socfinasia","aliases":["socfinasia"],"type":"agriculture","description":"Branche asiatique de Socfin (implantations au Cambodge, Indonésie).","chain":["Socfinasia","Socfin","Bolloré SE"]},
+  {"n":"Safacam","aliases":["safacam"],"type":"agriculture","description":"Société de plantations au Cameroun gérée via le réseau Socfin.","chain":["Safacam","Socfin","Bolloré SE"]},
+  {"n":"Socapalm","aliases":["socapalm"],"type":"agriculture","description":"Autre vaste réseau de plantations au Cameroun sous gestion Socfin.","chain":["Socapalm","Socfin","Bolloré SE"]},
+  {"n":"Sofibol","aliases":["sofibol","société financière bolloré"],"type":"holding","description":"Holding financière participant au contrôle croisé du groupe.","chain":["Sofibol","Bolloré SE"]},
+  {"n":"Plantations des Terres Rouges","aliases":["terres rouges"],"type":"holding","description":"Société de portefeuille historique.","chain":["Plantations des Terres Rouges","Bolloré SE"]},
+  {"n":"Compagnie de Cornouaille","aliases":["cornouaille"],"type":"holding","description":"Holding financière du groupe.","chain":["Compagnie de Cornouaille","Bolloré SE"]},
+  {"n":"Nord-Sumatra Investissements","aliases":["nord-sumatra","nord sumatra"],"type":"holding","description":"Holding de participations financières.","chain":["Nord-Sumatra Investissements","Bolloré SE"]},
+  {"n":"Imperial Mediterranean","aliases":["imperial mediterranean"],"type":"holding","description":"Société holding consolidant les participations.","chain":["Imperial Mediterranean","Bolloré SE"]},
+  {"n":"Bolloré Films","aliases":["bollore films","bolloré films"],"type":"industrie","description":"Activité historique de fabrication de films plastiques ultra-fins.","chain":["Bolloré Films","Bolloré SE"]},
+  {"n":"Blue Systems","aliases":["blue systems"],"type":"technologie","description":"Pôle dédié à la mobilité urbaine intelligente et à la gestion de données.","chain":["Blue Systems","Bolloré SE"]},
+  {"n":"Bluestorage","aliases":["bluestorage","blue storage"],"type":"energie","description":"Solutions de stockage d'énergie fixe.","chain":["Bluestorage","Blue Solutions","Bolloré SE"]},
+  {"n":"L'Olympia","aliases":["olympia","l olympia", "l'olympia"],"type":"spectacle","description":"Mythique salle de spectacle parisienne.","chain":["L'Olympia","Vivendi","Bolloré SE"]},
+  {"n":"Olympia Production","aliases":["olympia production"],"type":"production","description":"Entité de production de spectacles et de festivals.","chain":["Olympia Production","Vivendi","Bolloré SE"]},
+  {"n":"Théâtre de l'Œuvre","aliases":["theatre de l oeuvre", "théâtre de l'œuvre"],"type":"spectacle","description":"Salle de théâtre située à Paris.","chain":["Théâtre de l'Œuvre","Vivendi","Bolloré SE"]},
+  {"n":"CanalOlympia","aliases":["canalolympia","canal olympia", "canalolympia idrissa ouedraogo"],"type":"spectacle","description":"Réseau de salles de cinéma et de spectacles en Afrique.","chain":["CanalOlympia","Vivendi","Bolloré SE"]},
+  {"n":"PRISA","aliases":["prisa","groupe prisa"],"type":"media","description":"Groupe de médias espagnol (El País) avec participation minoritaire.","chain":["PRISA","Vivendi","Bolloré SE"]},
+  {"n":"MediaForEurope","aliases":["mediaforeurope","mfe","mediaset"],"type":"media","description":"Groupe audiovisuel italien avec forte participation de Vivendi.","chain":["MediaForEurope","Vivendi","Bolloré SE"]},
+  {"n":"Bigben Interactive","aliases":["bigben","bigben interactive"],"type":"digital","description":"Acteur français du jeu vidéo et des accessoires avec participation.","chain":["Bigben Interactive","Bolloré SE"]},
+  {"n":"Larousse","aliases":["larousse","editions larousse"],"type":"edition","description":"Éditeur historique de dictionnaires et encyclopédies.","chain":["Larousse","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Hatier","aliases":["hatier","editions hatier"],"type":"edition","description":"Éditeur spécialisé dans les ouvrages scolaires et éducatifs.","chain":["Hatier","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Dunod","aliases":["dunod","editions dunod"],"type":"edition","description":"Éditeur de livres professionnels et académiques.","chain":["Dunod","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Le Livre de Poche","aliases":["livre de poche","le livre de poche"],"type":"edition","description":"Éditeur de littérature au format poche.","chain":["Le Livre de Poche","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"JC Lattès","aliases":["jc lattes","jc lattès","editions jc lattes"],"type":"edition","description":"Maison d'édition de littérature générale.","chain":["JC Lattès","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Pika Édition","aliases":["pika edition","pika","pika édition"],"type":"edition","description":"Maison d'édition spécialisée dans le manga.","chain":["Pika Édition","Hachette Livre","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Aelia Duty Free","aliases":["aelia","aelia duty free"],"type":"distribution","description":"Boutiques en zones douanières et aéroports.","chain":["Aelia Duty Free","Louis Hachette Group","Bolloré SE"]},
+  {"n":"Institut CSA","aliases":["csa","institut csa"],"type":"publicite","description":"Institut de sondages et d'études de marché.","chain":["Institut CSA","Havas","Vivendi","Bolloré SE"]},
+  {"n": "Éditions Albert René", "aliases": ["editions albert rene", "albert rene", "albert rené"], "type": "edition", "description": "Éditeur historique qui détient et exploite les droits exclusifs des bandes dessinées Astérix.", "chain": ["Éditions Albert René", "Hachette Livre", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "Marabout", "aliases": ["marabout", "editions marabout"], "type": "edition", "description": "Maison d'édition leader en France pour les livres de vie pratique, la cuisine et le bien-être.", "chain": ["Marabout", "Hachette Livre", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "Armand Colin", "aliases": ["armand colin", "editions armand colin"], "type": "edition", "description": "Éditeur spécialisé dans les ouvrages universitaires et la recherche académique.", "chain": ["Armand Colin", "Hachette Livre", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "Group Vivendi Africa", "aliases": ["gva", "group vivendi africa", "canalbox", "canal box"], "type": "telecom", "description": "Fournisseur d'accès internet très haut débit par fibre optique, opérant en Afrique sous la marque Canalbox.", "chain": ["Group Vivendi Africa", "Vivendi", "Bolloré SE"]},
+  {"n": "K+", "aliases": ["k+", "k plus", "vstv"], "type": "media", "description": "Bouquet de télévision par satellite et acteur majeur de la télévision payante sur le marché vietnamien.", "chain": ["K+", "Canal+", "Vivendi", "Bolloré SE"]},
+  {"n": "Thema", "aliases": ["thema", "thema tv"], "type": "media", "description": "Filiale spécialisée dans la création et la distribution internationale de chaînes de télévision thématiques.", "chain": ["Thema", "Canal+", "Vivendi", "Bolloré SE"]},
+  {"n": "The Copyrights Group", "aliases": ["copyrights group", "the copyrights group"], "type": "production", "description": "Agence gérant les droits dérivés et les propriétés intellectuelles, notamment la franchise de l'ours Paddington.", "chain": ["The Copyrights Group", "Vivendi", "Bolloré SE"]},
+  {"n": "Numerama", "aliases": ["numerama"], "type": "digital", "description": "Média en ligne francophone de référence sur les technologies, la science et la pop culture.", "chain": ["Numerama", "Prisma Media", "Vivendi", "Bolloré SE"]},
+  {"n": "Frandroid", "aliases": ["frandroid"], "type": "digital", "description": "Site d'actualité incontournable spécialisé dans la tech, les smartphones et les nouvelles mobilités.", "chain": ["Frandroid", "Prisma Media", "Vivendi", "Bolloré SE"]},
+  {"n": "Madmoizelle", "aliases": ["madmoizelle"], "type": "digital", "description": "Magazine féminin et féministe en ligne.", "chain": ["Madmoizelle", "Prisma Media", "Vivendi", "Bolloré SE"]},
+  {"n": "MilK Magazine", "aliases": ["milk", "milk magazine"], "type": "presse", "description": "Publication trimestrielle haut de gamme dédiée à la mode enfantine et à l'art de vivre en famille.", "chain": ["MilK Magazine", "Prisma Media", "Vivendi", "Bolloré SE"]},
+  {"n": "Buzzman", "aliases": ["buzzman"], "type": "publicite", "description": "Agence de communication française très influente, reconnue pour son ton décalé et ses campagnes virales.", "chain": ["Buzzman", "Havas", "Vivendi", "Bolloré SE"]},
+  {"n": "Rosa Paris", "aliases": ["rosa paris", "rosapark"], "type": "publicite", "description": "Agence de publicité globale et très récompensée, anciennement connue sous le nom de Rosapark.", "chain": ["Rosa Paris", "Havas", "Vivendi", "Bolloré SE"]},
+  {"n": "Folies Bergère", "aliases": ["folies bergere", "folies bergère", "les folies bergere"], "type": "spectacle", "description": "Célèbre salle de music-hall parisienne dont l'exploitation est assurée par le pôle Lagardère Live Entertainment.", "chain": ["Folies Bergère", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "Casino de Paris", "aliases": ["casino de paris"], "type": "spectacle", "description": "Autre salle de spectacle mythique de la capitale intégrée au portefeuille de gestion événementielle du groupe.", "chain": ["Casino de Paris", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "Arkéa Arena", "aliases": ["arkea arena", "arkéa arena"], "type": "spectacle", "description": "Immense salle de concerts et de spectacles inaugurée en 2018 et située dans l'agglomération bordelaise.", "chain": ["Arkéa Arena", "Louis Hachette Group", "Bolloré SE"]},
+  {"n": "MCA Records", "aliases": ["mca records"], "type": "musique", "description": "label discographique américain", "chain": ["MCA Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Verve Records", "aliases": ["verve records"], "type": "musique", "description": "label discographique américain", "chain": ["Verve Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Argentina S.A.", "aliases": ["universal music argentina s.a.", "universal music argentina"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Argentina S.A.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Republic Records, Inc.", "aliases": ["republic records, inc.", "republic records"], "type": "musique", "description": "compagnie de disques américaine", "chain": ["Republic Records, Inc.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Roc-A-Fella Records", "aliases": ["roc-a-fella records", "roc a fella"], "type": "musique", "description": "Label historique rattaché au réseau Universal Music.", "chain": ["Roc-A-Fella Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Ruff Ryders Entertainment", "aliases": ["ruff ryders entertainment"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Ruff Ryders Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Priority Records", "aliases": ["priority records"], "type": "musique", "description": "label discographique américain", "chain": ["Priority Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Virgin Records", "aliases": ["virgin records"], "type": "musique", "description": "label de musique britannique", "chain": ["Virgin Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Indonesia", "aliases": ["universal music indonesia"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Indonesia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Studio Bagel", "aliases": ["studio bagel"], "type": "production", "description": "collectif d'humoristes et société de production française", "chain": ["Studio Bagel", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Eagle Rock Entertainment", "aliases": ["eagle rock entertainment"], "type": "production", "description": "Entité de production/distribution rattachée au réseau Vivendi.", "chain": ["Eagle Rock Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI Japan", "aliases": ["emi japan"], "type": "musique", "description": "label discographique japonais", "chain": ["EMI Japan", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Casablanca Records", "aliases": ["casablanca records"], "type": "musique", "description": "label discographique américain", "chain": ["Casablanca Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music GmbH", "aliases": ["universal music gmbh"], "type": "musique", "description": "label de musique", "chain": ["Universal Music GmbH", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cash Money Records", "aliases": ["cash money records"], "type": "musique", "description": "label discographique américain", "chain": ["Cash Money Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Musidisc", "aliases": ["musidisc"], "type": "musique", "description": "label discographique, racheté par Universal Music en 2004", "chain": ["Musidisc", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Geffen Records", "aliases": ["geffen records"], "type": "musique", "description": "label discographique américain", "chain": ["Geffen Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Amaru Entertainment", "aliases": ["amaru entertainment"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Amaru Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI Records", "aliases": ["emi records"], "type": "musique", "description": "label discographique multinational d'origine britannique", "chain": ["EMI Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Thématiques", "aliases": ["canal+ thematiques", "canal+ thématiques"], "type": "media", "description": "Filiale d'édition de chaînes du groupe Canal+.", "chain": ["Canal+ Thématiques", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Hong Kong", "aliases": ["universal music hong kong"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Hong Kong", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "GOOD Music", "aliases": ["good music"], "type": "musique", "description": "label discographique américain", "chain": ["GOOD Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Imperial Records", "aliases": ["imperial records"], "type": "musique", "description": "label discographique américain", "chain": ["Imperial Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Music", "aliases": ["capitol music"], "type": "musique", "description": "Label musical mondial.", "chain": ["Capitol Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "See Tickets France", "aliases": ["see tickets france", "see tickets"], "type": "billetterie", "description": "Réseau de billetterie lié au groupe Vivendi.", "chain": ["See Tickets France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Taiwan", "aliases": ["universal music taiwan"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Taiwan", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ International", "aliases": ["canal+ international"], "type": "media", "description": "opérateur du groupe Canal+ dans l'outre-mer français et à l'international.", "chain": ["Canal+ International", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Flip Records", "aliases": ["flip records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Flip Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Enterprises", "aliases": ["universal music enterprises"], "type": "musique", "description": "label discographique américain", "chain": ["Universal Music Enterprises", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Dreamville Records", "aliases": ["dreamville records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Dreamville Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Virgin EMI Records", "aliases": ["virgin emi records"], "type": "musique", "description": "société d'édition musicale britannique", "chain": ["Virgin EMI Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "CYFRA+", "aliases": ["cyfra+"], "type": "media", "description": "Opérateur satellite lié au groupe Canal+.", "chain": ["CYFRA+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Mercury Records", "aliases": ["mercury records"], "type": "musique", "description": "label de musique", "chain": ["Mercury Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Archiv Produktion", "aliases": ["archiv produktion"], "type": "musique", "description": "Label de musique classique.", "chain": ["Archiv Produktion", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gründ", "aliases": ["grund", "gründ"], "type": "edition", "description": "maison d'édition française", "chain": ["Gründ", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "The Kushner-Locke Company", "aliases": ["the kushner-locke company"], "type": "production", "description": "société de production américain", "chain": ["The Kushner-Locke Company", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Masterdisk", "aliases": ["masterdisk"], "type": "musique", "description": "Studio de mastering.", "chain": ["Masterdisk", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Polar Music", "aliases": ["polar music"], "type": "musique", "description": "compagnie de disque suédoise", "chain": ["Polar Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Deutsche Grammophon", "aliases": ["deutsche grammophon"], "type": "musique", "description": "label discographique allemand", "chain": ["Deutsche Grammophon", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Eccentric music", "aliases": ["eccentric music"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Eccentric music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Republic Corps", "aliases": ["republic corps"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Republic Corps", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Millennium Media", "aliases": ["millennium media"], "type": "production", "description": "société de production américaine", "chain": ["Millennium Media", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Brand Solutions", "aliases": ["canal+ brand solutions"], "type": "publicite", "description": "Régie publicitaire du groupe Canal+.", "chain": ["Canal+ Brand Solutions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Venkow Records", "aliases": ["venkow records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Venkow Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Japan", "aliases": ["universal music japan"], "type": "musique", "description": "Filiale japonaise d'Universal Music.", "chain": ["Universal Music Japan", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Group Nashville", "aliases": ["universal music group nashville"], "type": "musique", "description": "label discographique américain", "chain": ["Universal Music Group Nashville", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Fascination Records", "aliases": ["fascination records"], "type": "musique", "description": "label discographique britannique", "chain": ["Fascination Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Soul", "aliases": ["soul"], "type": "musique", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Soul", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Interscope Records", "aliases": ["interscope records"], "type": "musique", "description": "label discographique américain", "chain": ["Interscope Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Def Jam Recordings", "aliases": ["def jam recordings", "def jam"], "type": "musique", "description": "label discographique américain", "chain": ["Def Jam Recordings", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Young Money Entertainment", "aliases": ["young money entertainment"], "type": "musique", "description": "label discographique américain", "chain": ["Young Money Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Vertigo Records", "aliases": ["vertigo records"], "type": "musique", "description": "label discographique britannique", "chain": ["Vertigo Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Motown", "aliases": ["motown"], "type": "musique", "description": "compagnie de disques américaine", "chain": ["Motown", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Streamline Records", "aliases": ["streamline records"], "type": "musique", "description": "société d'édition et de production musicale américaine", "chain": ["Streamline Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "U live", "aliases": ["u live"], "type": "media", "description": "programme télévisé néo-zélandais", "chain": ["U live", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Latin Entertainment", "aliases": ["universal music latin entertainment"], "type": "musique", "description": "label de disques américain ; maison de disques, division d'Universal Music Group", "chain": ["Universal Music Latin Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Romania", "aliases": ["universal music romania"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Romania", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Interscope Geffen A&M", "aliases": ["interscope geffen a&m"], "type": "musique", "description": "label discographique américain", "chain": ["Interscope Geffen A&M", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Decca Records", "aliases": ["decca records"], "type": "musique", "description": "label discographique britannique", "chain": ["Decca Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Records, Inc.", "aliases": ["capitol records, inc."], "type": "musique", "description": "Label musical historique.", "chain": ["Capitol Records, Inc.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Portugal", "aliases": ["universal music portugal"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Portugal", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Australia Pty. Ltd.", "aliases": ["universal music australia pty. ltd."], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Australia Pty. Ltd.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Havas Voyages", "aliases": ["havas voyages"], "type": "tourisme", "description": "Ancienne filiale de voyages (historiquement liée).", "chain": ["Havas Voyages", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Tamla", "aliases": ["tamla"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Tamla", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Republic Records", "aliases": ["republic records"], "type": "musique", "description": "label discographique américain", "chain": ["Republic Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Lost Highway Records", "aliases": ["lost highway records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Lost Highway Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Island Def Jam Music Group", "aliases": ["island def jam music group"], "type": "musique", "description": "label discographique américain", "chain": ["Island Def Jam Music Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Malaysia", "aliases": ["universal music malaysia"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Malaysia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Sdn. Bhd.", "aliases": ["universal music sdn. bhd."], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Sdn. Bhd.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Casablanca Music, LLC", "aliases": ["casablanca music, llc"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Casablanca Music, LLC", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "SDKT Entertainment", "aliases": ["sdkt entertainment"], "type": "musique", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["SDKT Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Russia", "aliases": ["universal music russia"], "type": "musique", "description": "Filiale internationale d'Universal Music.", "chain": ["Universal Music Russia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Shady Records", "aliases": ["shady records"], "type": "musique", "description": "label discographique américain", "chain": ["Shady Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music France", "aliases": ["universal music france"], "type": "musique", "description": "filiale du groupe Universal Music", "chain": ["Universal Music France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Polydor", "aliases": ["polydor"], "type": "musique", "description": "label discographique multinational", "chain": ["Polydor", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "London Records", "aliases": ["london records"], "type": "musique", "description": "label musical anglais", "chain": ["London Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "UMG Recordings, Inc.", "aliases": ["umg recordings, inc.", "umg recordings"], "type": "musique", "description": "Entité corporate d'Universal Music Group.", "chain": ["UMG Recordings, Inc.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Music Operations Ltd.", "aliases": ["universal music operations ltd."], "type": "musique", "description": "Entité corporate d'Universal Music Group.", "chain": ["Universal Music Operations Ltd.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Decca Classics", "aliases": ["decca classics"], "type": "musique", "description": "label discographique britannique de musique classique", "chain": ["Decca Classics", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EmArcy", "aliases": ["emarcy"], "type": "musique", "description": "label d'enregistrement de jazz américain, fait partie de UMG", "chain": ["EmArcy", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Vivendi Village", "aliases": ["vivendi village"], "type": "spectacle", "description": "société française (spectacles, billetterie, salles)", "chain": ["Vivendi Village", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Island Records", "aliases": ["island records"], "type": "musique", "description": "société d'édition musicale, fait partie de Universal Music Group", "chain": ["Island Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Caroline Records", "aliases": ["caroline records"], "type": "musique", "description": "label discographique américain", "chain": ["Caroline Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Coktel Vision", "aliases": ["coktel vision"], "type": "jeux_video", "description": "développeur et éditeur français de jeux vidéo (historique)", "chain": ["Coktel Vision", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Film", "aliases": ["canal+ film"], "type": "media", "description": "Chaîne du bouquet Canal+.", "chain": ["Canal+ Film", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Motown", "aliases": ["universal motown"], "type": "musique", "description": "label discographique", "chain": ["Universal Motown", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Progressif Media", "aliases": ["progressif media"], "type": "publicite", "description": "agence de communication française", "chain": ["Progressif Media", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Groupe Canal+ SA", "aliases": ["groupe canal+ sa", "groupe canal+"], "type": "media", "description": "Entité mère du groupe audiovisuel.", "chain": ["Groupe Canal+ SA", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Premium", "aliases": ["canal+ premium"], "type": "media", "description": "chaîne de télévision payante (Pologne)", "chain": ["Canal+ Premium", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Zeitgeist", "aliases": ["zeitgeist"], "type": "filiale", "description": "Entité rattachée au périmètre d'influence de Vivendi/Bolloré.", "chain": ["Zeitgeist", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Novegasy", "aliases": ["novegasy"], "type": "media", "description": "Chaîne de télévision malgache", "chain": ["Novegasy", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Collective Music Group", "aliases": ["collective music group"], "type": "musique", "description": "label discographique américain", "chain": ["Collective Music Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Pressplay", "aliases": ["pressplay"], "type": "media", "description": "Ancien service musical.", "chain": ["Pressplay", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Poko Rekords", "aliases": ["poko rekords"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Poko Rekords", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Red Production Company", "aliases": ["red production company"], "type": "production", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Red Production Company", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal Digitaal", "aliases": ["canal digitaal"], "type": "media", "description": "Opérateur de télévision.", "chain": ["Canal Digitaal", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Sierra Entertainment", "aliases": ["sierra entertainment"], "type": "jeux_video", "description": "développeur et éditeur de jeux vidéo (historique Vivendi Games)", "chain": ["Sierra Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Sparrow Records", "aliases": ["sparrow records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Sparrow Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "A&M Records", "aliases": ["a&m records"], "type": "musique", "description": "label de musique américain", "chain": ["A&M Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Agence H", "aliases": ["agence h"], "type": "publicite", "description": "Agence de communication.", "chain": ["Agence H", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI Classics", "aliases": ["emi classics"], "type": "musique", "description": "label discographique britannique", "chain": ["EMI Classics", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Havas 360", "aliases": ["havas 360"], "type": "publicite", "description": "Agence du réseau Havas.", "chain": ["Havas 360", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Imperial", "aliases": ["imperial"], "type": "filiale", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Imperial", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Roster Music", "aliases": ["roster music"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Roster Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cosmos Music Group", "aliases": ["cosmos music group"], "type": "musique", "description": "label discographique suédois", "chain": ["Cosmos Music Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Vicarious Visions", "aliases": ["vicarious visions"], "type": "jeux_video", "description": "studio américain de développement de jeu vidéo (historique)", "chain": ["Vicarious Visions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Picture Music International", "aliases": ["picture music international"], "type": "musique", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Picture Music International", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Christian Music Group", "aliases": ["capitol christian music group"], "type": "musique", "description": "Branche musicale de Capitol.", "chain": ["Capitol Christian Music Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Fiction Records", "aliases": ["fiction records"], "type": "musique", "description": "label discographique britannique", "chain": ["Fiction Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Studios", "aliases": ["capitol studios"], "type": "musique", "description": "Studios d'enregistrement mythiques rattachés au groupe.", "chain": ["Capitol Studios", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI", "aliases": ["emi"], "type": "musique", "description": "label de musique britannique", "chain": ["EMI", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Vevo", "aliases": ["vevo"], "type": "media", "description": "service de visionnage gratuit et légal de vidéo-clips (contrôlé en partie par UMG)", "chain": ["Vevo", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cooltempo Records", "aliases": ["cooltempo records"], "type": "musique", "description": "Label rattaché au réseau Universal Music.", "chain": ["Cooltempo Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gaiam Vivendi Entertainment", "aliases": ["gaiam vivendi entertainment"], "type": "production", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Gaiam Vivendi Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Music Choice", "aliases": ["music choice"], "type": "musique", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Music Choice", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "International Music Feed", "aliases": ["international music feed"], "type": "media", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["International Music Feed", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Kids", "aliases": ["canal+ kids"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Kids", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Allociné", "aliases": ["allocine", "allociné"], "type": "media", "description": "société française fournissant des informations cinématographiques en ligne", "chain": ["Allociné", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Wengo", "aliases": ["wengo"], "type": "technologie", "description": "entreprise française", "chain": ["Wengo", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Lava Records", "aliases": ["lava records"], "type": "musique", "description": "label discographique américain", "chain": ["Lava Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Jimmy", "aliases": ["jimmy", "canal jimmy"], "type": "media", "description": "ancienne chaîne de télévision française du groupe Canal+", "chain": ["Jimmy", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "MGM-EMI", "aliases": ["mgm-emi"], "type": "musique", "description": "coentreprise entre EMI et Metro-Goldwyn-Mayer", "chain": ["MGM-EMI", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Philips Records", "aliases": ["philips records"], "type": "musique", "description": "label discographique international d'origine néerlandaise", "chain": ["Philips Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Freshplanet", "aliases": ["freshplanet"], "type": "jeux_video", "description": "studio de développement de jeu vidéo (Gameloft)", "chain": ["Freshplanet", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Def Soul", "aliases": ["def soul"], "type": "musique", "description": "divison RnB de Def Jam", "chain": ["Def Soul", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Calderstone Productions", "aliases": ["calderstone productions"], "type": "production", "description": "Entité de production rattachée au groupe.", "chain": ["Calderstone Productions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Sport 360", "aliases": ["canal+ sport 360"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Sport 360", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Cinéma(s)", "aliases": ["canal+ cinema(s)", "canal+ cinema", "canal+ cinéma"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Cinéma(s)", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Barclay", "aliases": ["barclay"], "type": "musique", "description": "label discographique français", "chain": ["Barclay", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal Records", "aliases": ["universal records"], "type": "musique", "description": "label discographique américain", "chain": ["Universal Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Music Corporation of America", "aliases": ["music corporation of america", "mca"], "type": "musique", "description": "Ancienne maison mère (rachetée par Universal).", "chain": ["Music Corporation of America", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Solid State Records", "aliases": ["solid state records"], "type": "musique", "description": "label discographique américain", "chain": ["Solid State Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Ciné+", "aliases": ["cine+", "ciné+"], "type": "media", "description": "bouquet de chaînes cinéma", "chain": ["Ciné+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI United Kingdom", "aliases": ["emi united kingdom"], "type": "musique", "description": "Branche britannique d'EMI.", "chain": ["EMI United Kingdom", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "BMG Music Publishing", "aliases": ["bmg music publishing"], "type": "musique", "description": "Édition musicale (rachetée par Universal).", "chain": ["BMG Music Publishing", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Music France", "aliases": ["capitol music france"], "type": "musique", "description": "label discographique français d'Universal Music France", "chain": ["Capitol Music France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Doggy Style Records", "aliases": ["doggy style records"], "type": "musique", "description": "label discographique américain", "chain": ["Doggy Style Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Havas Creative", "aliases": ["havas creative"], "type": "publicite", "description": "entreprise française de publicité", "chain": ["Havas Creative", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "PIAS Group", "aliases": ["pias group", "pias"], "type": "musique", "description": "société d'enregistrement, de licence, de distribution, de vente et de marketing pour la musique indépendante détenue par Universal Music Group", "chain": ["PIAS Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Virgin Music Group", "aliases": ["virgin music group"], "type": "musique", "description": "groupe de label discographique détenu par Universal Music Group", "chain": ["Virgin Music Group", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Seasons", "aliases": ["seasons"], "type": "media", "description": "chaîne de télévision française", "chain": ["Seasons", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI Televisa Music", "aliases": ["emi televisa music"], "type": "musique", "description": "label de disques", "chain": ["EMI Televisa Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Records", "aliases": ["capitol records"], "type": "musique", "description": "label discographique américain", "chain": ["Capitol Records", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Good Machine", "aliases": ["good machine"], "type": "production", "description": "société de production de cinéma américaine", "chain": ["Good Machine", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Vivendi Games", "aliases": ["vivendi games"], "type": "jeux_video", "description": "société américaine (historique)", "chain": ["Vivendi Games", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Pathé-Marconi", "aliases": ["pathe-marconi", "pathé-marconi"], "type": "musique", "description": "société française de l'industrie musicale", "chain": ["Pathé-Marconi", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "PolyGram Music", "aliases": ["polygram music", "polygram"], "type": "musique", "description": "maison de disques historique", "chain": ["PolyGram Music", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "MiniMini+", "aliases": ["minimini+"], "type": "media", "description": "Chaîne de télévision polonaise", "chain": ["MiniMini+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Non Stop People", "aliases": ["non stop people"], "type": "media", "description": "chaîne de télévision d'information people liée à Canal+", "chain": ["Non Stop People", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "SPI International", "aliases": ["spi international"], "type": "media", "description": "Opérateur média international lié au groupe Canal+.", "chain": ["SPI International", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Sport Week-end", "aliases": ["canal+ sport week-end"], "type": "media", "description": "Chaîne sportive du bouquet Canal+.", "chain": ["Canal+ Sport Week-end", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Adventure Line Productions", "aliases": ["adventure line productions", "alp"], "type": "production", "description": "société de production de télévision française (Banijay)", "chain": ["Adventure Line Productions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Big Brother", "aliases": ["big brother"], "type": "media", "description": "franchise d'émission de télé réalité (via Banijay/Endemol)", "chain": ["Big Brother", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Box Office", "aliases": ["canal+ box office"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Box Office", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Sport 2", "aliases": ["canal+ sport 2"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Canal+ Sport 2", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Horizons", "aliases": ["canal+ horizons"], "type": "media", "description": "chaîne de télévision", "chain": ["Canal+ Horizons", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Sport 5", "aliases": ["canal+ sport 5"], "type": "media", "description": "chaîne de télévision sport de Canal+ Platforma", "chain": ["Canal+ Sport 5", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Magnolia", "aliases": ["magnolia"], "type": "production", "description": "Entité de production télévisuelle (réseau Banijay).", "chain": ["Magnolia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "H2O Productions", "aliases": ["h2o productions", "h2o"], "type": "production", "description": "société de production audiovisuelle (Cyril Hanouna)", "chain": ["H2O Productions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Golf+", "aliases": ["golf+"], "type": "media", "description": "chaîne de télévision française", "chain": ["Golf+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Meter Television", "aliases": ["meter television"], "type": "production", "description": "Entité liée au groupe Bolloré/Vivendi (réseau Banijay).", "chain": ["Meter Television", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Séries", "aliases": ["canal+ series", "canal+ séries"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Séries", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "ffrr", "aliases": ["ffrr"], "type": "musique", "description": "Label discographique britannique de musique électronique.", "chain": ["ffrr", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Sport", "aliases": ["canal+ sport"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Sport", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Comédie+", "aliases": ["comedie+", "comédie+"], "type": "media", "description": "chaîne de télévision française", "chain": ["Comédie+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cuisine+", "aliases": ["cuisine+"], "type": "media", "description": "chaîne de télévision française (disparue)", "chain": ["Cuisine+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Betclic", "aliases": ["betclic"], "type": "divertissement", "description": "entreprise française de jeux d'argent en ligne (historiquement liée via Banijay/Lov Group)", "chain": ["Betclic", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Impressions Games", "aliases": ["impressions games"], "type": "jeux_video", "description": "Studio de jeux vidéo (historique Vivendi Games).", "chain": ["Impressions Games", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Ciné+ OCS", "aliases": ["cine+ ocs", "ciné+ ocs"], "type": "media", "description": "bouquet de chaînes cinéma et de chaînes télé", "chain": ["Ciné+ OCS", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Synergistic Software", "aliases": ["synergistic software"], "type": "jeux_video", "description": "studio de développement de jeu vidéo (historique)", "chain": ["Synergistic Software", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gestmusic", "aliases": ["gestmusic"], "type": "production", "description": "Société de production télé (réseau Banijay).", "chain": ["Gestmusic", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Domo", "aliases": ["canal+ domo"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Canal+ Domo", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Studiocanal UK", "aliases": ["studiocanal uk"], "type": "production", "description": "distributeur de film britannique", "chain": ["Studiocanal UK", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Hyper+", "aliases": ["hyper+"], "type": "media", "description": "Ancienne chaîne de télévision sur les jeux vidéo.", "chain": ["Hyper+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Tiger Aspect Productions", "aliases": ["tiger aspect productions"], "type": "production", "description": "Société de production télé britannique (réseau Banijay).", "chain": ["Tiger Aspect Productions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Rugby+", "aliases": ["rugby+"], "type": "media", "description": "Chaîne sportive du groupe Canal+.", "chain": ["Rugby+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ France", "aliases": ["canal+ france"], "type": "media", "description": "société audiovisuelle en France", "chain": ["Canal+ France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "51 Minds Entertainment", "aliases": ["51 minds entertainment"], "type": "production", "description": "Société de production télé américaine (réseau Banijay).", "chain": ["51 Minds Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ 3D", "aliases": ["canal+ 3d"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ 3D", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Britannia Music Club", "aliases": ["britannia music club"], "type": "musique", "description": "Club de vente par correspondance (Universal).", "chain": ["Britannia Music Club", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Zeppelin TV", "aliases": ["zeppelin tv"], "type": "production", "description": "Société de production télé espagnole (réseau Banijay).", "chain": ["Zeppelin TV", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cuarzo Producciones", "aliases": ["cuarzo producciones"], "type": "production", "description": "Société de production télé (réseau Banijay).", "chain": ["Cuarzo Producciones", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Dlo/Magnolia", "aliases": ["dlo/magnolia"], "type": "production", "description": "Société de production télé (réseau Banijay).", "chain": ["Dlo/Magnolia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Banijay Iberia", "aliases": ["banijay iberia"], "type": "production", "description": "groupe de sociétés de production de télévision en Espagne et au Portugal", "chain": ["Banijay Iberia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Kidz Only!", "aliases": ["kidz only!"], "type": "media", "description": "Entité liée au groupe Bolloré/Vivendi.", "chain": ["Kidz Only!", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Diagonal TV", "aliases": ["diagonal tv"], "type": "production", "description": "société de production espagnole (Banijay)", "chain": ["Diagonal TV", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Infosport+", "aliases": ["infosport+"], "type": "media", "description": "chaîne de télévision française", "chain": ["Infosport+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Mars Films", "aliases": ["mars films"], "type": "production", "description": "société de production audiovisuelle (Vivendi)", "chain": ["Mars Films", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Endemol Shine Australia", "aliases": ["endemol shine australia"], "type": "production", "description": "Société de production télé (réseau Banijay).", "chain": ["Endemol Shine Australia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Foot+", "aliases": ["foot+"], "type": "media", "description": "chaîne de télévision thématique française", "chain": ["Foot+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Foot", "aliases": ["canal+ foot"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Foot", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Grand Écran", "aliases": ["canal+ grand ecran", "canal+ grand écran"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Grand Écran", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Kuchnia", "aliases": ["canal+ kuchnia"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Canal+ Kuchnia", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "KM Production", "aliases": ["km production"], "type": "production", "description": "Société de production (Banijay).", "chain": ["KM Production", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Endemol France", "aliases": ["endemol france"], "type": "production", "description": "filiale de Banijay", "chain": ["Endemol France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Planete+ (Pologne)", "aliases": ["planete+ (pologne)"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Planete+ (Pologne)", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Maison+", "aliases": ["maison+"], "type": "media", "description": "chaîne de télévision française (disparue)", "chain": ["Maison+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "OCS", "aliases": ["ocs"], "type": "media", "description": "chaîne de télévision française (rachetée par Canal+)", "chain": ["OCS", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ 4K Ultra HD", "aliases": ["canal+ 4k ultra hd"], "type": "media", "description": "Chaine de télévision", "chain": ["Canal+ 4K Ultra HD", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Dokument", "aliases": ["canal+ dokument"], "type": "media", "description": "chaine de télévision", "chain": ["Canal+ Dokument", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Planète+ Crime", "aliases": ["planete+ crime", "planète+ crime"], "type": "media", "description": "chaîne de télévision", "chain": ["Planète+ Crime", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Société d'exploitation d'un service d'information", "aliases": ["societe d'exploitation d'un service d'information"], "type": "media", "description": "entreprise exploitant CNews", "chain": ["Société d'exploitation d'un service d'information", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Planète+ Aventure", "aliases": ["planete+ aventure", "planète+ aventure"], "type": "media", "description": "chaîne de télévision française", "chain": ["Planète+ Aventure", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Planète+ Thalassa", "aliases": ["planete+ thalassa", "planète+ thalassa"], "type": "media", "description": "chaîne de télévision française", "chain": ["Planète+ Thalassa", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "My Major Company", "aliases": ["my major company"], "type": "musique", "description": "label de musique français (historiquement lié)", "chain": ["My Major Company", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Sport+", "aliases": ["sport+"], "type": "media", "description": "chaîne de télévision française (disparue)", "chain": ["Sport+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Docs", "aliases": ["canal+ docs"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Docs", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Teletoon+ Polska", "aliases": ["teletoon+ polska"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Teletoon+ Polska", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Décalé", "aliases": ["canal+ decale", "canal+ décalé"], "type": "media", "description": "chaîne de télévision française", "chain": ["Canal+ Décalé", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Europe 2 Pop TV", "aliases": ["europe 2 pop tv"], "type": "media", "description": "chaîne de télévision musicale française", "chain": ["Europe 2 Pop TV", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Canal+ Family", "aliases": ["canal+ family"], "type": "media", "description": "chaîne de télévision thématique", "chain": ["Canal+ Family", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Propaganda Films", "aliases": ["propaganda films"], "type": "production", "description": "ancienne société de production audiovisuelle (PolyGram/Universal)", "chain": ["Propaganda Films", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Banijay Entertainment", "aliases": ["banijay entertainment"], "type": "production", "description": "entreprise de production audiovisuelle", "chain": ["Banijay Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Air Productions", "aliases": ["air productions"], "type": "production", "description": "société de production (Banijay)", "chain": ["Air Productions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Ale Kino+", "aliases": ["ale kino+"], "type": "media", "description": "chaîne de télévision polonaise", "chain": ["Ale Kino+", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "TNTSAT", "aliases": ["tntsat"], "type": "media", "description": "chaînes télévisées françaises par satellite du Groupe Canal+", "chain": ["TNTSAT", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "A+ Ivoire", "aliases": ["a+ ivoire"], "type": "media", "description": "chaîne de télévision ivoirienne (Canal+)", "chain": ["A+ Ivoire", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Raven Software", "aliases": ["raven software"], "type": "jeux_video", "description": "Studio de jeux vidéo (historiquement lié via Activision Blizzard/Vivendi Games).", "chain": ["Raven Software", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "High Moon Studios", "aliases": ["high moon studios"], "type": "jeux_video", "description": "Studio de jeux vidéo (Vivendi Games).", "chain": ["High Moon Studios", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Sledgehammer Games", "aliases": ["sledgehammer games"], "type": "jeux_video", "description": "Studio de jeux vidéo (Vivendi Games).", "chain": ["Sledgehammer Games", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Activision Blizzard", "aliases": ["activision blizzard"], "type": "jeux_video", "description": "entreprise américaine de jeux vidéo (anciennement contrôlée par Vivendi)", "chain": ["Activision Blizzard", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Radical Entertainment", "aliases": ["radical entertainment"], "type": "jeux_video", "description": "studio de développement de jeu vidéo (Vivendi Games)", "chain": ["Radical Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Blizzard North", "aliases": ["blizzard north"], "type": "jeux_video", "description": "Studio de jeux vidéo (Vivendi Games).", "chain": ["Blizzard North", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Telepiù", "aliases": ["telepiu", "telepiù"], "type": "media", "description": "Réseau de télévision lié à Canal+.", "chain": ["Telepiù", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Proletariat", "aliases": ["proletariat"], "type": "jeux_video", "description": "Studio de jeux vidéos (Blizzard).", "chain": ["Proletariat", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cegetel", "aliases": ["cegetel"], "type": "telecom", "description": "entreprise française disparue (historiquement Vivendi)", "chain": ["Cegetel", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Pocket", "aliases": ["pocket"], "type": "edition", "description": "maison d'édition française (groupe Editis, historiquement lié)", "chain": ["Pocket", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gamestar", "aliases": ["gamestar"], "type": "jeux_video", "description": "filiale et marque d'Activision", "chain": ["Gamestar", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Luxoflux", "aliases": ["luxoflux"], "type": "jeux_video", "description": "développeur américain de jeux vidéos (Activision)", "chain": ["Luxoflux", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "USA Broadcasting", "aliases": ["usa broadcasting"], "type": "media", "description": "Réseau de télévision rattaché au périmètre Vivendi.", "chain": ["USA Broadcasting", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Infinity Ward", "aliases": ["infinity ward"], "type": "jeux_video", "description": "studio de développement de jeux vidéo (Activision)", "chain": ["Infinity Ward", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Nathan", "aliases": ["nathan"], "type": "edition", "description": "maison d'édition française (Editis)", "chain": ["Nathan", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "CLE International", "aliases": ["cle international"], "type": "edition", "description": "maison d'édition scolaire (Editis)", "chain": ["CLE International", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Bizarre Creations", "aliases": ["bizarre creations"], "type": "jeux_video", "description": "ancienne société britannique de développement de jeu vidéo (Activision)", "chain": ["Bizarre Creations", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Tana Éditions", "aliases": ["tana editions", "tana éditions"], "type": "edition", "description": "maison d'édition appartenant au groupe Editis", "chain": ["Tana Éditions", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Treyarch", "aliases": ["treyarch"], "type": "jeux_video", "description": "développeur américain de jeux vidéo (Activision)", "chain": ["Treyarch", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gameloft Montréal", "aliases": ["gameloft montreal", "gameloft montréal"], "type": "jeux_video", "description": "studio canadien de développement de jeu vidéo (Gameloft)", "chain": ["Gameloft Montréal", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "King", "aliases": ["king"], "type": "jeux_video", "description": "entreprise britannique de jeu vidéo (Activision Blizzard)", "chain": ["King", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Presses du Châtelet", "aliases": ["presses du chatelet", "presses du châtelet"], "type": "edition", "description": "maison d'édition française (Editis)", "chain": ["Presses du Châtelet", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Blizzard Entertainment", "aliases": ["blizzard entertainment"], "type": "jeux_video", "description": "studio de développement et d'édition de jeux vidéo (historiquement Vivendi Games)", "chain": ["Blizzard Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Éditions Perrin", "aliases": ["editions perrin", "éditions perrin"], "type": "edition", "description": "maison d'édition française (Editis)", "chain": ["Éditions Perrin", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Éditions de l'Archipel", "aliases": ["editions de l'archipel", "éditions de l'archipel"], "type": "edition", "description": "maison d'édition française (Editis)", "chain": ["Éditions de l'Archipel", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Demonware", "aliases": ["demonware"], "type": "technologie", "description": "société irlandaise de développement de logiciels (Activision)", "chain": ["Demonware", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Beenox", "aliases": ["beenox"], "type": "jeux_video", "description": "studio de développement québécois de jeux vidéo (Activision)", "chain": ["Beenox", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Neversoft", "aliases": ["neversoft"], "type": "jeux_video", "description": "développeur de jeux vidéo (Activision)", "chain": ["Neversoft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Tipeee", "aliases": ["tipeee"], "type": "digital", "description": "entreprise exploitant le service en ligne du même nom (Participation historique)", "chain": ["Tipeee", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Initial Artist Services", "aliases": ["initial artist services"], "type": "musique", "description": "label discographique français (Universal)", "chain": ["Initial Artist Services", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Viasat Hockey", "aliases": ["viasat hockey"], "type": "media", "description": "Chaîne de télévision.", "chain": ["Viasat Hockey", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Ma planète", "aliases": ["ma planete", "ma planète"], "type": "media", "description": "Ancienne chaîne de télévision.", "chain": ["Ma planète", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Planète Juniors", "aliases": ["planete juniors", "planète juniors"], "type": "media", "description": "Ancienne chaîne jeunesse.", "chain": ["Planète Juniors", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Caroline France", "aliases": ["caroline france"], "type": "musique", "description": "ancien label discographique français (Universal)", "chain": ["Caroline France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Viasat Fotboll", "aliases": ["viasat fotboll"], "type": "media", "description": "Chaîne de télévision.", "chain": ["Viasat Fotboll", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Viasat", "aliases": ["viasat"], "type": "media", "description": "Opérateur de télévision lié au groupe Canal+.", "chain": ["Viasat", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Viasat Sport", "aliases": ["viasat sport"], "type": "media", "description": "Chaîne sportive.", "chain": ["Viasat Sport", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Island Def Jam", "aliases": ["island def jam"], "type": "musique", "description": "label discographique d'Universal Music France", "chain": ["Island Def Jam", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Free Time", "aliases": ["free time"], "type": "restauration", "description": "ancienne chaîne de restauration rapide française", "chain": ["Free Time", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "TV6", "aliases": ["tv6"], "type": "media", "description": "chaîne de télévision suédoise (Viasat)", "chain": ["TV6", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Def Jam Recordings France", "aliases": ["def jam recordings france"], "type": "musique", "description": "label discographique", "chain": ["Def Jam Recordings France", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Astralwerks", "aliases": ["astralwerks"], "type": "musique", "description": "label discographique américain (Universal)", "chain": ["Astralwerks", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Blue Note", "aliases": ["blue note"], "type": "musique", "description": "label discographique américain (EMI/Universal)", "chain": ["Blue Note", "Groupe Vivendi / Bolloré SE"]}
+  {"n": "Sol", "aliases": ["sol"], "type": "musique", "description": "Entité liée au réseau Universal Music.", "chain": ["Sol", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "ffss", "aliases": ["ffss"], "type": "musique", "description": "Label discographique historique lié à Decca Records.", "chain": ["ffss", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Pergola", "aliases": ["pergola"], "type": "musique", "description": "Label ou entité d'édition liée au groupe.", "chain": ["Pergola", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Kapp Records, Inc.", "aliases": ["kapp records, inc.", "kapp records"], "type": "musique", "description": "Label discographique rattaché au réseau Universal Music.", "chain": ["Kapp Records, Inc.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Studio Blanqui", "aliases": ["studio blanqui"], "type": "production", "description": "Studio de production historique.", "chain": ["Studio Blanqui", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "7 Studios", "aliases": ["7 studios"], "type": "jeux_video", "description": "Ancien studio de développement de jeux vidéo lié à l'entité Activision Blizzard.", "chain": ["7 Studios", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Budcat Creations", "aliases": ["budcat creations"], "type": "jeux_video", "description": "Studio de jeux vidéo lié à l'historique d'Activision.", "chain": ["Budcat Creations", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "First Look Studios", "aliases": ["first look studios"], "type": "production", "description": "Société de production et de distribution.", "chain": ["First Look Studios", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "UAV Corporation", "aliases": ["uav corporation"], "type": "media", "description": "Société de distribution de vidéo domestique américaine.", "chain": ["UAV Corporation", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Superbus Pathé-Marconi", "aliases": ["superbus pathe-marconi", "superbus pathé-marconi"], "type": "historique", "description": "Camion publicitaire des années 1950 lié à Pathé-Marconi.", "chain": ["Superbus Pathé-Marconi", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Cinepoly", "aliases": ["cinepoly"], "type": "musique", "description": "Label discographique lié au réseau Universal.", "chain": ["Cinepoly", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "TV3+ HD", "aliases": ["tv3+ hd"], "type": "media", "description": "Chaîne de télévision liée au réseau Viasat.", "chain": ["TV3+ HD", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "TV3 Puls", "aliases": ["tv3 puls"], "type": "media", "description": "Chaîne de télévision liée au réseau Viasat.", "chain": ["TV3 Puls", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "P4 Radio Hele Norge", "aliases": ["p4 radio hele norge", "p4"], "type": "radio", "description": "Station de radio norvégienne liée au réseau Viasat.", "chain": ["P4 Radio Hele Norge", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Go East Entertainment", "aliases": ["go east entertainment"], "type": "musique", "description": "Label discographique asiatique du réseau Universal.", "chain": ["Go East Entertainment", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "FightBox", "aliases": ["fightbox"], "type": "media", "description": "Chaîne de télévision thématique.", "chain": ["FightBox", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "EMI America Records, Inc.", "aliases": ["emi america records, inc.", "emi america"], "type": "musique", "description": "Label discographique lié au groupe EMI.", "chain": ["EMI America Records, Inc.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Universal-Island Records Ltd.", "aliases": ["universal-island records ltd."], "type": "musique", "description": "Entité corporate de l'industrie musicale.", "chain": ["Universal-Island Records Ltd.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Capitol Records of Canada, Ltd.", "aliases": ["capitol records of canada, ltd.", "capitol records canada"], "type": "musique", "description": "Filiale canadienne du label Capitol Records.", "chain": ["Capitol Records of Canada, Ltd.", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Mercury Nashville", "aliases": ["mercury nashville"], "type": "musique", "description": "Filiale de musique country liée au label Mercury.", "chain": ["Mercury Nashville", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "DocuBox", "aliases": ["docubox"], "type": "media", "description": "Chaîne de télévision documentaire.", "chain": ["DocuBox", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "V4", "aliases": ["v4"], "type": "media", "description": "Chaîne de télévision norvégienne du réseau Viasat.", "chain": ["V4", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "FashionBox", "aliases": ["fashionbox"], "type": "media", "description": "Chaîne de télévision thématique liée à SPI International.", "chain": ["FashionBox", "Groupe Vivendi / Bolloré SE"]}
+  {"n": "Half-Life", "aliases": ["half life", "half-life"], "type": "historique_revendu", "description": "Franchise mythique de Valve, dont les premiers épisodes ont été édités et distribués par Sierra Entertainment, filiale de Vivendi.", "chain": ["Half-Life", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gangstar", "aliases": ["gangstar", "gangstar vegas", "gangstar new orleans"], "type": "jeux_video", "description": "Série de jeux d'action en monde ouvert (façon GTA) développée par Gameloft.", "chain": ["Gangstar", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "N.O.V.A.", "aliases": ["nova", "n.o.v.a.", "nova legacy"], "type": "jeux_video", "description": "Série de jeux de tir futuristes sur mobile développée par Gameloft.", "chain": ["N.O.V.A.", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Order & Chaos", "aliases": ["order & chaos", "order and chaos"], "type": "jeux_video", "description": "MMORPG sur mobile très populaire créé par Gameloft.", "chain": ["Order & Chaos", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Dragon Mania Legends", "aliases": ["dragon mania", "dragon mania legends"], "type": "jeux_video", "description": "Jeu mobile d'élevage de dragons très populaire de Gameloft.", "chain": ["Dragon Mania Legends", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Real Football", "aliases": ["real football", "real soccer"], "type": "jeux_video", "description": "Franchise historique de jeux de football sur mobile développée par Gameloft.", "chain": ["Real Football", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "King's Quest", "aliases": ["king's quest", "kings quest"], "type": "historique_revendu", "description": "Série pionnière du jeu d'aventure développée par Sierra Entertainment, propriété historique de Vivendi.", "chain": ["King's Quest", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Leisure Suit Larry", "aliases": ["leisure suit larry"], "type": "historique_revendu", "description": "Série de jeux d'aventure humoristiques éditée par Sierra, ancienne filiale de Vivendi.", "chain": ["Leisure Suit Larry", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "SWAT", "aliases": ["swat", "swat 3", "swat 4"], "type": "historique_revendu", "description": "Série de jeux de tir tactique éditée par Sierra Entertainment sous l'ère Vivendi.", "chain": ["SWAT", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Caesar", "aliases": ["caesar", "caesar 3", "caesar 4"], "type": "historique_revendu", "description": "Série mythique de gestion de cités antiques (city-builder) éditée par Sierra Entertainment.", "chain": ["Caesar", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Gobliiins", "aliases": ["gobliiins", "goblins"], "type": "historique_revendu", "description": "Série de jeux d'aventure et de réflexion créée par le studio français Coktel Vision (racheté par Sierra/Vivendi).", "chain": ["Gobliiins", "Coktel Vision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Prototype", "aliases": ["prototype"], "type": "historique_revendu", "description": "Jeu d'action en monde ouvert édité par Activision pendant la période où Vivendi contrôlait Activision Blizzard.", "chain": ["Prototype", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Tony Hawk's", "aliases": ["tony hawk", "tony hawk's", "tony hawk pro skater"], "type": "historique_revendu", "description": "Célèbre franchise de skateboard d'Activision, dont plusieurs épisodes sont sortis sous le contrôle financier de Vivendi.", "chain": ["Tony Hawk's", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Hearthstone", "aliases": ["hearthstone"], "type": "historique_revendu", "description": "Jeu de cartes à succès de Blizzard, développé et lancé alors que Vivendi était encore l'actionnaire principal du groupe.", "chain": ["Hearthstone", "Blizzard Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]}
+  {"n": "Asphalt", "aliases": ["asphalt", "asphalt 9", "asphalt 8", "asphalt legends unite"], "type": "jeux_video", "description": "Franchise de jeux de course à succès développée par Gameloft, filiale à 100% de Vivendi.", "chain": ["Asphalt", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Minion Rush", "aliases": ["minion rush", "moi moche et méchant minion rush"], "type": "jeux_video", "description": "Jeu mobile extrêmement populaire développé par Gameloft.", "chain": ["Minion Rush", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Disney Magic Kingdoms", "aliases": ["disney magic kingdoms", "magic kingdoms"], "type": "jeux_video", "description": "Jeu de gestion de parc d'attractions sur mobile exploité par Gameloft.", "chain": ["Disney Magic Kingdoms", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Modern Combat", "aliases": ["modern combat", "modern combat 5", "modern combat versus"], "type": "jeux_video", "description": "Série de jeux de tir phares sur mobile développée par Gameloft.", "chain": ["Modern Combat", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Dungeon Hunter", "aliases": ["dungeon hunter", "dungeon hunter 5"], "type": "jeux_video", "description": "Franchise de jeux de rôle et d'action emblématique de Gameloft.", "chain": ["Dungeon Hunter", "Gameloft", "Groupe Vivendi / Bolloré SE"]},
+  {"n": "Adibou", "aliases": ["adibou", "adi", "les aventures d'adibou"], "type": "historique_revendu", "description": "Célèbre franchise de jeux éducatifs développée par Coktel Vision, studio historiquement racheté et absorbé par l'empire Vivendi.", "chain": ["Adibou", "Coktel Vision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Call of Duty", "aliases": ["call of duty", "cod", "warzone", "modern warfare", "black ops"], "type": "historique_revendu", "description": "La franchise phare d'Activision. Le groupe Vivendi a possédé et contrôlé Activision Blizzard de 2008 à 2013, engrangeant les bénéfices de l'âge d'or de la série.", "chain": ["Call of Duty", "Activision Blizzard", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "World of Warcraft", "aliases": ["world of warcraft", "wow"], "type": "historique_revendu", "description": "Le MMORPG mythique de Blizzard. Le studio a appartenu à Vivendi de 1998 jusqu'à son indépendance financière des années plus tard.", "chain": ["World of Warcraft", "Blizzard Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Candy Crush Saga", "aliases": ["candy crush saga", "candy crush"], "type": "historique_revendu", "description": "Jeu mobile phénomène racheté par Activision Blizzard à l'époque où le groupe français était encore impliqué dans le capital.", "chain": ["Candy Crush Saga", "King", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Crash Bandicoot", "aliases": ["crash bandicoot", "crash"], "type": "historique_revendu", "description": "Franchise iconique de jeux de plateforme dont les droits de publication ont longtemps appartenu à Vivendi Universal Games.", "chain": ["Crash Bandicoot", "Vivendi Games", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Spyro the Dragon", "aliases": ["spyro the dragon", "spyro"], "type": "historique_revendu", "description": "Célèbre licence de jeux vidéo détenue un temps par Vivendi Universal Games avant la fusion avec Activision.", "chain": ["Spyro the Dragon", "Vivendi Games", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Diablo", "aliases": ["diablo", "diablo 3", "diablo 4", "diablo immortal"], "type": "historique_revendu", "description": "Franchise fondatrice du genre hack 'n' slash développée par Blizzard lors de sa période sous giron Vivendi.", "chain": ["Diablo", "Blizzard Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "StarCraft", "aliases": ["starcraft", "starcraft 2"], "type": "historique_revendu", "description": "Licence légendaire de stratégie en temps réel créée par Blizzard Entertainment, historiquement contrôlé par Vivendi.", "chain": ["StarCraft", "Blizzard Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Guitar Hero", "aliases": ["guitar hero"], "type": "historique_revendu", "description": "Série de jeux musicaux ultra-populaire éditée par Activision durant l'ère de contrôle de Vivendi.", "chain": ["Guitar Hero", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Skylanders", "aliases": ["skylanders"], "type": "historique_revendu", "description": "Franchise pionnière des jeux vidéo utilisant des figurines, lancée sous la tutelle financière de Vivendi.", "chain": ["Skylanders", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "Empire Earth", "aliases": ["empire earth"], "type": "historique_revendu", "description": "Jeu de stratégie historique emblématique édité par Sierra Entertainment, filiale de Vivendi.", "chain": ["Empire Earth", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
+  {"n": "F.E.A.R.", "aliases": ["f.e.a.r.", "fear", "f.e.a.r"], "type": "historique_revendu", "description": "Série de jeux de tir horrifiques à succès éditée initialement par Vivendi Universal Games.", "chain": ["F.E.A.R.", "Vivendi Games", "Anciennement Groupe Vivendi / Bolloré SE"]}
+]
+
+        // Configuration du moteur de recherche Fuse.js
+        const optionsRecherche = {
+            includeScore: true,
+            threshold: 0.3, // Tolérance aux fautes de frappe (0 = strict, 1 = très permissif)
+            keys: ['n', 'aliases'] // On cherche dans le nom officiel et dans les alias
+        };
+        const moteurDeRecherche = new Fuse(baseDeDonnees, optionsRecherche);
+
+        function lancerRecherche() {
+            const saisie = document.getElementById("barreRecherche").value.trim();
+            const zoneResultat = document.getElementById("zoneResultat");
+            
+            // On ne fait rien si le champ est vide
+            if (!saisie) return;
+
+            // On rend la zone visible
+            zoneResultat.classList.remove("hidden");
+
+            // Exécution de la recherche
+            const resultats = moteurDeRecherche.search(saisie);
+
+            if (resultats.length > 0) {
+                // Si on trouve quelque chose, on prend le résultat le plus pertinent
+                const cible = resultats[0].item;
+                
+                // Cas spécifique pour OCB ou les jeux revendus
+                if (cible.type === "historique_revendu") {
+                    zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-yellow-500 bg-yellow-50";
+                    zoneResultat.innerHTML = `
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">⏳</span>
+                            <h2 class="text-2xl font-bold text-yellow-800">Un fantôme du passé !</h2>
+                        </div>
+                        <p class="text-lg mb-2">Vous avez cherché <strong>${cible.n}</strong>.</p>
+                        <p class="text-slate-700 mb-6">${cible.description}</p>
+                        <div class="bg-white p-4 rounded-lg border border-yellow-200">
+                            <p class="text-sm text-yellow-800 font-semibold uppercase tracking-wider mb-2">Chaîne historique</p>
+                            <p class="font-medium text-slate-800">${cible.chain.join(" ➔ ")}</p>
+                        </div>
+                    `;
+                } else {
+                    // Cas classique "Bolloré'd"
+                    zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-red-600 bg-red-50";
+                    zoneResultat.innerHTML = `
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">🚨</span>
+                            <h2 class="text-2xl font-bold text-red-700">Oui ! Vous êtes Bolloré'd.</h2>
+                        </div>
+                        <p class="text-lg mb-2">L'entité <strong>${cible.n}</strong> fait bien partie du groupe.</p>
+                        <p class="text-slate-700 mb-6">${cible.description}</p>
+                        <div class="bg-white p-4 rounded-lg border border-red-200 shadow-sm">
+                            <p class="text-sm text-red-700 font-semibold uppercase tracking-wider mb-2">Chaîne de contrôle</p>
+                            <p class="font-medium text-slate-800">${cible.chain.join(" ➔ ")}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                // Si aucun résultat
+                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-emerald-500 bg-emerald-50";
+                zoneResultat.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">✅</span>
+                        <h2 class="text-2xl font-bold text-emerald-800">A priori non !</h2>
+                    </div>
+                    <p class="text-lg text-emerald-900">Nous n'avons trouvé aucun lien direct entre <strong>"${saisie}"</strong> et l'empire Bolloré dans notre base de données.</p>
+                    <p class="text-sm mt-4 text-emerald-700 italic">Attention, cette base n'est pas exhaustive et l'empire évolue constamment.</p>
+                `;
+            }
+        }
+
+        function gererToucheEntree(event) {
+            if (event.key === "Enter") {
+                lancerRecherche();
+            }
+        }
+    </script>
+</body>
+</html>
