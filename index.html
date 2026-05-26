@@ -21,12 +21,11 @@
             <input 
                 type="text" 
                 id="barreRecherche" 
-                onkeypress="gererToucheEntree(event)"
                 placeholder="Ex: CNews, Havas, Gameloft..." 
                 class="w-full sm:w-96 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm"
             >
             <button 
-                onclick="lancerRecherche()"
+                id="boutonVerifier"
                 class="bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition duration-200 shadow-md"
             >
                 Vérifier
@@ -37,8 +36,51 @@
     </div>
 
     <script>
-        // COLLE TA BASE DE DONNÉES ICI ENTRE LES CROCHETS
-        const baseDeDonnees =[
+        // 1. Définition de la fonction de recherche
+        function lancerRecherche() {
+            const saisie = document.getElementById("barreRecherche").value.trim();
+            const zoneResultat = document.getElementById("zoneResultat");
+            if (!saisie) return;
+            zoneResultat.classList.remove("hidden");
+            const resultats = moteurDeRecherche.search(saisie);
+
+            if (resultats.length > 0) {
+                const cible = resultats[0].item;
+                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-red-600 bg-red-50";
+                zoneResultat.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">🚨</span>
+                        <h2 class="text-2xl font-bold text-red-700">Oui ! Vous êtes Bolloré'd.</h2>
+                    </div>
+                    <p class="text-lg mb-2">L'entité <strong>${cible.n}</strong> fait bien partie du groupe.</p>
+                    <p class="text-slate-700 mb-6">${cible.description}</p>
+                    <div class="bg-white p-4 rounded-lg border border-red-200 shadow-sm">
+                        <p class="text-sm text-red-700 font-semibold uppercase tracking-wider mb-2">Chaîne de contrôle</p>
+                        <p class="font-medium text-slate-800">${cible.chain.join(" ➔ ")}</p>
+                    </div>
+                `;
+            } else {
+                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-emerald-500 bg-emerald-50";
+                zoneResultat.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">✅</span>
+                        <h2 class="text-2xl font-bold text-emerald-800">A priori non !</h2>
+                    </div>
+                    <p class="text-lg text-emerald-900">Aucun lien direct trouvé pour <strong>"${saisie}"</strong>.</p>
+                `;
+            }
+        }
+
+        // 2. Initialisation après le chargement du DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("boutonVerifier").addEventListener("click", lancerRecherche);
+            document.getElementById("barreRecherche").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") lancerRecherche();
+            });
+        });
+
+        // 3. Ta base de données
+        const baseDeDonnees = [ 
   {"n":"Bolloré SE","aliases":["bollore","bollore se","bolloré se","bolloré"],"type":"holding","description":"La holding principale, point de convergence de l'empire.","chain":["Bolloré SE"]},
   {"n":"Compagnie de l'Odet","aliases":["odet","compagnie de l odet","compagnie odet"],"type":"holding","description":"Société holding de tête qui contrôle Bolloré SE.","chain":["Compagnie de l'Odet","Bolloré SE"]},
   {"n":"Financière de l'Odet","aliases":["financiere de l odet","financière de l odet"],"type":"holding","description":"Holding intermédiaire dans la pyramide de contrôle.","chain":["Financière de l'Odet","Compagnie de l'Odet","Bolloré SE"]},
@@ -452,53 +494,8 @@
   {"n": "Skylanders", "aliases": ["skylanders"], "type": "historique_revendu", "description": "Franchise pionnière des jeux vidéo utilisant des figurines, lancée sous la tutelle financière de Vivendi.", "chain": ["Skylanders", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
   {"n": "Empire Earth", "aliases": ["empire earth"], "type": "historique_revendu", "description": "Jeu de stratégie historique emblématique édité par Sierra Entertainment, filiale de Vivendi.", "chain": ["Empire Earth", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
   {"n": "F.E.A.R.", "aliases": ["f.e.a.r.", "fear", "f.e.a.r"], "type": "historique_revendu", "description": "Série de jeux de tir horrifiques à succès éditée initialement par Vivendi Universal Games.", "chain": ["F.E.A.R.", "Vivendi Games", "Anciennement Groupe Vivendi / Bolloré SE"]}
-]
-
-        const optionsRecherche = {
-            includeScore: true,
-            threshold: 0.3,
-            keys: ['n', 'aliases']
-        };
-        const moteurDeRecherche = new Fuse(baseDeDonnees, optionsRecherche);
-
-        function lancerRecherche() {
-            const saisie = document.getElementById("barreRecherche").value.trim();
-            const zoneResultat = document.getElementById("zoneResultat");
-            
-            if (!saisie) return;
-            zoneResultat.classList.remove("hidden");
-            const resultats = moteurDeRecherche.search(saisie);
-
-            if (resultats.length > 0) {
-                const cible = resultats[0].item;
-                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-red-600 bg-red-50";
-                zoneResultat.innerHTML = `
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-3xl">🚨</span>
-                        <h2 class="text-2xl font-bold text-red-700">Oui ! Vous êtes Bolloré'd.</h2>
-                    </div>
-                    <p class="text-lg mb-2">L'entité <strong>${cible.n}</strong> fait bien partie du groupe.</p>
-                    <p class="text-slate-700 mb-6">${cible.description}</p>
-                    <div class="bg-white p-4 rounded-lg border border-red-200 shadow-sm">
-                        <p class="text-sm text-red-700 font-semibold uppercase tracking-wider mb-2">Chaîne de contrôle</p>
-                        <p class="font-medium text-slate-800">${cible.chain.join(" ➔ ")}</p>
-                    </div>
-                `;
-            } else {
-                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-emerald-500 bg-emerald-50";
-                zoneResultat.innerHTML = `
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-3xl">✅</span>
-                        <h2 class="text-2xl font-bold text-emerald-800">A priori non !</h2>
-                    </div>
-                    <p class="text-lg text-emerald-900">Aucun lien direct trouvé pour <strong>"${saisie}"</strong>.</p>
-                `;
-            }
-        }
-
-        function gererToucheEntree(event) {
-            if (event.key === "Enter") lancerRecherche();
-        }
+ ];
+        const moteurDeRecherche = new Fuse(baseDeDonnees, { includeScore: true, threshold: 0.3, keys: ['n', 'aliases'] });
     </script>
 </body>
 </html>
