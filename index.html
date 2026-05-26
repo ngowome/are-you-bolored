@@ -2,85 +2,22 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Are you Bolloré'd ?</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center py-16 px-4">
-
-    <div class="max-w-2xl w-full text-center space-y-6">
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">
-            Are you <span class="text-red-600">Bolloré'd ?</span>
-        </h1>
-        <p class="text-lg text-slate-600">
-            Vérifiez instantanément si un média, une marque ou une entreprise appartient à la galaxie de la famille Bolloré.
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <input 
-                type="text" 
-                id="barreRecherche" 
-                placeholder="Ex: CNews, Havas, Gameloft..." 
-                class="w-full sm:w-96 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm"
-            >
-            <button 
-                id="boutonVerifier"
-                class="bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition duration-200 shadow-md"
-            >
-                Vérifier
-            </button>
-        </div>
-
-        <div id="zoneResultat" class="hidden"></div>
-    </div>
+<body class="bg-slate-50 p-10 text-center">
+    <h1 class="text-4xl font-bold mb-6">Are you Bolloré'd ?</h1>
+    <input id="barreRecherche" placeholder="Rechercher..." class="border p-2 rounded">
+    <button onclick="lancerRecherche()" class="bg-red-500 text-white p-2 rounded">Vérifier</button>
+    <div id="zoneResultat" class="mt-6"></div>
 
     <script>
-        // 1. Définition de la fonction de recherche
-        function lancerRecherche() {
-            const saisie = document.getElementById("barreRecherche").value.trim();
-            const zoneResultat = document.getElementById("zoneResultat");
-            if (!saisie) return;
-            zoneResultat.classList.remove("hidden");
-            const resultats = moteurDeRecherche.search(saisie);
-
-            if (resultats.length > 0) {
-                const cible = resultats[0].item;
-                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-red-600 bg-red-50";
-                zoneResultat.innerHTML = `
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-3xl">🚨</span>
-                        <h2 class="text-2xl font-bold text-red-700">Oui ! Vous êtes Bolloré'd.</h2>
-                    </div>
-                    <p class="text-lg mb-2">L'entité <strong>${cible.n}</strong> fait bien partie du groupe.</p>
-                    <p class="text-slate-700 mb-6">${cible.description}</p>
-                    <div class="bg-white p-4 rounded-lg border border-red-200 shadow-sm">
-                        <p class="text-sm text-red-700 font-semibold uppercase tracking-wider mb-2">Chaîne de contrôle</p>
-                        <p class="font-medium text-slate-800">${cible.chain.join(" ➔ ")}</p>
-                    </div>
-                `;
-            } else {
-                zoneResultat.className = "mt-10 text-left p-6 md:p-8 rounded-2xl shadow-lg border-l-8 border-emerald-500 bg-emerald-50";
-                zoneResultat.innerHTML = `
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-3xl">✅</span>
-                        <h2 class="text-2xl font-bold text-emerald-800">A priori non !</h2>
-                    </div>
-                    <p class="text-lg text-emerald-900">Aucun lien direct trouvé pour <strong>"${saisie}"</strong>.</p>
-                `;
-            }
-        }
-
-        // 2. Initialisation après le chargement du DOM
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("boutonVerifier").addEventListener("click", lancerRecherche);
-            document.getElementById("barreRecherche").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") lancerRecherche();
-            });
-        });
-
-        // 3. Ta base de données
-        const baseDeDonnees = [ 
+        // C'est ici que tu dois définir la variable baseDeDonnees
+        const baseDeDonnees = [
+            {"n": "Canal+", "aliases": ["canal plus", "canal+"], "type": "media", "description": "Groupe audiovisuel.", "chain": ["Canal+", "Vivendi", "Bolloré SE"]},
+            {"n": "Gameloft", "aliases": ["gameloft"], "type": "digital", "description": "Jeux vidéo.", "chain": ["Gameloft", "Vivendi", "Bolloré SE"]}
+            
   {"n":"Bolloré SE","aliases":["bollore","bollore se","bolloré se","bolloré"],"type":"holding","description":"La holding principale, point de convergence de l'empire.","chain":["Bolloré SE"]},
   {"n":"Compagnie de l'Odet","aliases":["odet","compagnie de l odet","compagnie odet"],"type":"holding","description":"Société holding de tête qui contrôle Bolloré SE.","chain":["Compagnie de l'Odet","Bolloré SE"]},
   {"n":"Financière de l'Odet","aliases":["financiere de l odet","financière de l odet"],"type":"holding","description":"Holding intermédiaire dans la pyramide de contrôle.","chain":["Financière de l'Odet","Compagnie de l'Odet","Bolloré SE"]},
@@ -494,8 +431,23 @@
   {"n": "Skylanders", "aliases": ["skylanders"], "type": "historique_revendu", "description": "Franchise pionnière des jeux vidéo utilisant des figurines, lancée sous la tutelle financière de Vivendi.", "chain": ["Skylanders", "Activision", "Anciennement Groupe Vivendi / Bolloré SE"]},
   {"n": "Empire Earth", "aliases": ["empire earth"], "type": "historique_revendu", "description": "Jeu de stratégie historique emblématique édité par Sierra Entertainment, filiale de Vivendi.", "chain": ["Empire Earth", "Sierra Entertainment", "Anciennement Groupe Vivendi / Bolloré SE"]},
   {"n": "F.E.A.R.", "aliases": ["f.e.a.r.", "fear", "f.e.a.r"], "type": "historique_revendu", "description": "Série de jeux de tir horrifiques à succès éditée initialement par Vivendi Universal Games.", "chain": ["F.E.A.R.", "Vivendi Games", "Anciennement Groupe Vivendi / Bolloré SE"]}
- ];
-        const moteurDeRecherche = new Fuse(baseDeDonnees, { includeScore: true, threshold: 0.3, keys: ['n', 'aliases'] });
+
+        ];
+
+        const moteurDeRecherche = new Fuse(baseDeDonnees, { keys: ['n', 'aliases'], threshold: 0.3 });
+
+        function lancerRecherche() {
+            const saisie = document.getElementById("barreRecherche").value.trim();
+            const zoneResultat = document.getElementById("zoneResultat");
+            const resultats = moteurDeRecherche.search(saisie);
+
+            if (resultats.length > 0) {
+                const cible = resultats[0].item;
+                zoneResultat.innerHTML = `<div class="bg-red-100 p-4">Oui ! ${cible.n} appartient à Bolloré : ${cible.chain.join(" ➔ ")}</div>`;
+            } else {
+                zoneResultat.innerHTML = `<div class="bg-green-100 p-4">A priori non !</div>`;
+            }
+        }
     </script>
 </body>
 </html>
